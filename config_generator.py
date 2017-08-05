@@ -21,8 +21,19 @@
 #   THE SOFTWARE.
 
 import sublime
+import sublime_plugin
+
 import os
 import json
+import shutil
+
+try:
+    from Maven.utils.mvn import pom
+except ImportError:
+    from SublimeMaven.utils.mvn import pom
+
+CURRENT_PATH = os.path.dirname( os.path.realpath( __file__ ) )
+
 
 def plugin_loaded():
     settings = sublime.load_settings('Preferences.sublime-settings')
@@ -32,7 +43,7 @@ def plugin_loaded():
     # write the configuration dependent 'Side Bar', 'Context', and 'Command pallet'
     # using user-specified command lists, or defaults if none found
     def generate_config():
-        maven_cmd_entry_list = settings.get('maven_menu_commands', 
+        maven_cmd_entry_list = settings.get('maven_menu_commands',
             [
                 { "caption": "Maven: Run install", "command": "maven", "args": {"paths": [], "goals": ["install"]} },
                 { "caption": "Maven: Run clean install", "command": "maven", "args": {"paths": [], "goals": ["clean", "install"]} },
@@ -55,8 +66,8 @@ def plugin_loaded():
             menu_entry['caption'] = menu_entry['caption'].replace('Maven: ', '', 1)
 
         maven_cmd_entry_list.append({ "caption": "-" })
-        maven_cmd_entry_list.append({ 
-                "caption": "Generate Project from all POMs in Path", 
+        maven_cmd_entry_list.append({
+                "caption": "Generate Project from all POMs in Path",
                 "command": "import_maven_projects",
                 "args": { "paths": [] }
             })
@@ -83,7 +94,37 @@ def plugin_loaded():
         maven_config.write(commands_str)
         maven_config.flush()
         maven_config.close()
+        disable_linter_context_menu()
 
     sublime.set_timeout_async(generate_config, 1000)
     settings.clear_on_change('maven_menu_commands')
     settings.add_on_change('maven_menu_commands', generate_config)
+
+class HideMenuOnActivation(sublime_plugin.EventListener):
+
+    def on_activated_async(self, view):
+        disable_linter_context_menu()
+
+def disable_linter_context_menu():
+    """
+        Disable the linter Context Menu, if not on a linter view.
+
+        Allow to hide .sublime-menu folders
+        https://github.com/SublimeTextIssues/Core/issues/1859
+    """
+    origin  = os.path.join( CURRENT_PATH, 'Context.sublime-menu' )
+    destine = os.path.join( CURRENT_PATH, 'Context.sublime-menu-hidden' )
+
+    try:
+        if is_current_view_linted( sublime.active_window().active_view() ):
+            shutil.move( destine, origin )
+
+        else:
+            shutil.move( origin, destine )
+
+    except IOError:
+        pass
+
+def is_current_view_linted(view):
+    # print( "persist.view_linters: " + str( persist.view_linters ) )
+    return pom.find_nearest_pom( view.file_name() ) != None
