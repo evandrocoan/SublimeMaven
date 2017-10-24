@@ -43,6 +43,12 @@ def plugin_loaded():
     # write the configuration dependent 'Side Bar', 'Context', and 'Command pallet'
     # using user-specified command lists, or defaults if none found
     def generate_config():
+
+        # Stop showing: FileNotFoundError: [Errno 2] No such file or directory: '.../Packages/Maven/Context.sublime-menu'
+        # when uninstalling the StudioChannel channel collection.
+        if not os.path.isdir( plugin_path ):
+            return
+
         maven_cmd_entry_list = settings.get('maven_menu_commands',
             [
                 { "caption": "Maven: Run install", "command": "maven", "args": {"paths": [], "goals": ["install"]} },
