@@ -132,5 +132,8 @@ def disable_linter_context_menu():
         pass
 
 def is_current_view_linted(view):
-    file = view.file_name()
+    if view:
+        file = view.file_name()
+    else:
+        return False
     return pom.find_nearest_pom( file ) != None if file else False
