@@ -279,7 +279,9 @@ class MavenCommand(sublime_plugin.WindowCommand, MavenProcessListener):
 
 
     def is_enabled(self, paths, goals, props = None, kill = False):
-        if len(paths) == 0 and self.window.active_view().file_name():
+        view = self.window.active_view()
+
+        if view and len(paths) == 0 and view.file_name():
             paths = [self.window.active_view().file_name()]
         return ((len(paths) == 1) and (pom.find_nearest_pom(paths[0]) != None)) or kill
 
