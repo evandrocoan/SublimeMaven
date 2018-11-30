@@ -78,15 +78,24 @@ def plugin_loaded():
                 "args": { "paths": [] }
             })
 
-        menu_cmd_list = [
-                { "caption": "-", "id": "maven_commands" },
-                {
-                "caption": "Maven",
-                "children": maven_cmd_entry_list
-                }
-            ]
+        menu_cmd_list = \
+        [
+            {
+                "caption": "Project Specific",
+                "id": "project-specific",
+                "children":
+                [
+                    { "caption": "-", "id": "maven_commands" },
+                    {
+                    "caption": "Maven",
+                    "children": maven_cmd_entry_list
+                    }
+                ]
+            }
+        ]
 
-        menu_cmd_list_str = json.dumps(menu_cmd_list, indent = 4)
+        menu_cmd_list_str = "// AUTO GENERATED FILE BY MAVEN PACKAGE!\n%s" \
+                "\n// AUTO GENERATED FILE BY MAVEN PACKAGE!\n" % json.dumps(menu_cmd_list, indent = 4)
 
         maven_config = open(os.path.join(plugin_path, "Context.sublime-menu"), "w")
         maven_config.write(menu_cmd_list_str)
@@ -118,15 +127,20 @@ def disable_linter_context_menu():
         Allow to hide .sublime-menu folders
         https://github.com/SublimeTextIssues/Core/issues/1859
     """
-    origin  = os.path.join( CURRENT_PATH, 'Context.sublime-menu' )
-    destine = os.path.join( CURRENT_PATH, 'Context.sublime-menu-hidden' )
+    origin_context_menu  = os.path.join( CURRENT_PATH, 'Context.sublime-menu' )
+    destine_context_menu = os.path.join( CURRENT_PATH, 'Context.sublime-menu-hidden' )
+
+    origin_side_bar  = os.path.join( CURRENT_PATH, 'Side Bar.sublime-menu' )
+    destine_side_bar = os.path.join( CURRENT_PATH, 'Side Bar.sublime-menu-hidden' )
 
     try:
         if is_current_view_linted( sublime.active_window().active_view() ):
-            shutil.move( destine, origin )
+            shutil.move( destine_side_bar, origin_side_bar )
+            shutil.move( destine_context_menu, origin_context_menu )
 
         else:
-            shutil.move( origin, destine )
+            shutil.move( origin_side_bar, destine_side_bar )
+            shutil.move( origin_context_menu, destine_context_menu )
 
     except IOError:
         pass

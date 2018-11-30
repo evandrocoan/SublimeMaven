@@ -3,6 +3,10 @@
 *.sublime-menu
 Generated.sublime-commands
 
+/Context.sublime-menu-hidden
+/Side Bar.sublime-menu-hidden
+
+
 # Packages
 *.egg
 *.egg-info
@@ -28,4 +32,3 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
-/Context.sublime-menu-hidden
